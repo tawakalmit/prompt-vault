@@ -170,7 +170,7 @@
 			<p class="text-base-content/50 text-lg">Belum ada prompt. Buat prompt pertamamu!</p>
 		</div>
 	{:else}
-		<div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
+		<div class="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
 			{#each visiblePrompts as prompt}
 				<div class="card bg-base-200 shadow-md">
 					{#if prompt.image_url}
@@ -182,21 +182,21 @@
 							/>
 						</figure>
 					{/if}
-					<div class="card-body">
-						<h2 class="card-title text-primary">{prompt.title}</h2>
-						<p class="text-base-content/70 line-clamp-4">{prompt.prompt}</p>
+					<div class="card-body p-3 md:p-6">
+						<h2 class="card-title text-sm md:text-base text-primary">{prompt.title}</h2>
+						<p class="text-base-content/70 line-clamp-4 text-xs md:text-sm">{prompt.prompt}</p>
 
-						<div class="flex items-center justify-between mt-2">
-							<div class="badge badge-outline badge-primary badge-sm">{prompt.category}</div>
-							<span class="text-xs text-base-content/50">
+						<div class="flex items-center justify-between mt-2 md:mt-3">
+							<div class="badge badge-outline badge-primary badge-xs md:badge-sm">{prompt.category}</div>
+							<span class="text-[10px] md:text-xs text-base-content/50">
 								{new Date(prompt.created_at).toLocaleDateString('id-ID')}
 							</span>
 						</div>
 
-						<div class="card-actions justify-end mt-3">
+						<div class="card-actions justify-end mt-2 md:mt-3">
 							<button
 								onclick={() => openEdit(prompt)}
-								class="btn btn-sm btn-outline btn-primary"
+								class="btn btn-xs md:btn-sm btn-outline btn-primary"
 							>
 								Edit
 							</button>
@@ -212,7 +212,7 @@
 								<input type="hidden" name="id" value={prompt.id} />
 								<button
 									type="button"
-									class="btn btn-sm btn-outline btn-error"
+									class="btn btn-xs md:btn-sm btn-outline btn-error"
 									onclick={async (e) => {
 										const form = (e.currentTarget as HTMLElement).closest('form') as HTMLFormElement;
 										const result = await Swal.fire({
