@@ -8,7 +8,7 @@
 	let showForm = $state(false);
 	let editingPrompt = $state<Prompt | null>(null);
 
-	const categories = ['Coding', 'Video', 'Image'];
+	const categories = ['Coding', 'Video', 'Image', 'Filter'];
 
 	const PAGE_SIZE = 6;
 	let visibleCount = $state(PAGE_SIZE);
