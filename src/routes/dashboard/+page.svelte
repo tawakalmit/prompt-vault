@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import Swal from 'sweetalert2';
 	import type { Prompt } from '$lib/types/database';
 	import type { PageData } from './$types';
 
@@ -7,6 +8,7 @@
 
 	let showForm = $state(false);
 	let editingPrompt = $state<Prompt | null>(null);
+	let isSubmitting = $state(false);
 
 	const categories = ['Coding', 'Video', 'Image', 'Filter'];
 
@@ -36,7 +38,7 @@
 	}
 </script>
 
-<div class="mx-auto px-4 py-8">
+<div class="mx-auto px-4 py-8 min-h-dvh">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-8">
 		<div>
@@ -67,8 +69,10 @@
 					action={editingPrompt ? '?/update' : '?/create'}
 					enctype="multipart/form-data"
 					use:enhance={() => {
+						isSubmitting = true;
 						return async ({ update }) => {
 							await update();
+							isSubmitting = false;
 							closeForm();
 						};
 					}}
@@ -142,10 +146,15 @@
 					</div>
 
 					<div class="modal-action">
-						<button type="submit" class="btn btn-primary">
-							{editingPrompt ? 'Update' : 'Simpan'}
+						<button type="submit" class="btn btn-primary" disabled={isSubmitting}>
+							{#if isSubmitting}
+								<span class="loading loading-spinner loading-sm"></span>
+								Menyimpan...
+							{:else}
+								{editingPrompt ? 'Update' : 'Simpan'}
+							{/if}
 						</button>
-						<button type="button" onclick={closeForm} class="btn btn-ghost">
+						<button type="button" onclick={closeForm} class="btn btn-ghost" disabled={isSubmitting}>
 							Batal
 						</button>
 					</div>
@@ -201,7 +210,28 @@
 								}}
 							>
 								<input type="hidden" name="id" value={prompt.id} />
-								<button type="submit" class="btn btn-sm btn-outline btn-error">
+								<button
+									type="button"
+									class="btn btn-sm btn-outline btn-error"
+									onclick={async (e) => {
+										const form = (e.currentTarget as HTMLElement).closest('form') as HTMLFormElement;
+										const result = await Swal.fire({
+											title: 'Hapus prompt?',
+											text: 'Prompt yang dihapus tidak bisa dikembalikan.',
+											icon: 'warning',
+											showCancelButton: true,
+											confirmButtonColor: '#e53e3e',
+											cancelButtonColor: '#6b7280',
+											confirmButtonText: 'Ya, hapus',
+											cancelButtonText: 'Batal',
+											background: '#1f1f1f',
+											color: '#fff'
+										});
+										if (result.isConfirmed) {
+											form.requestSubmit();
+										}
+									}}
+								>
 									Hapus
 								</button>
 							</form>

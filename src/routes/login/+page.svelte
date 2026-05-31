@@ -15,7 +15,7 @@
 	}
 </script>
 
-<div class="flex flex-col items-center justify-center min-h-[80vh] px-4">
+<div class="flex flex-col items-center justify-center min-h-[85dvh] px-4">
 	<div class="card bg-base-200 shadow-xl w-full max-w-sm">
 		<div class="card-body items-center text-center">
 			<h1 class="card-title text-2xl text-primary">Login</h1>
