@@ -6,6 +6,9 @@
 
 	let { data, children } = $props();
 
+	let navbarVisible = $state(true);
+	let lastScrollY = 0;
+
 	onMount(() => {
 		const { data: { subscription } } = data.supabase.auth.onAuthStateChange((_, newSession) => {
 			if (newSession?.expires_at !== data.session?.expires_at) {
@@ -13,13 +16,34 @@
 			}
 		});
 
-		return () => subscription.unsubscribe();
+		function handleScroll() {
+			const currentY = window.scrollY;
+			if (currentY < 10) {
+				navbarVisible = true;
+			} else if (currentY > lastScrollY) {
+				navbarVisible = false;
+			} else {
+				navbarVisible = true;
+			}
+			lastScrollY = currentY;
+		}
+
+		window.addEventListener('scroll', handleScroll, { passive: true });
+
+		return () => {
+			subscription.unsubscribe();
+			window.removeEventListener('scroll', handleScroll);
+		};
 	});
 </script>
 
 <div class="min-h-screen bg-base-100">
 	<!-- Navbar -->
-	<div class="navbar bg-base-200 shadow-sm">
+	<div
+		class="navbar bg-base-200 shadow-sm fixed top-0 left-0 right-0 z-50 transition-transform duration-300"
+		class:translate-y-0={navbarVisible}
+		class:-translate-y-full={!navbarVisible}
+	>
 		<div class="flex-1">
 			<a href="/" class="btn btn-ghost text-xl font-bold text-primary gap-2" style="font-family: 'Space Grotesk', sans-serif;">
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -43,12 +67,14 @@
 	</div>
 
 	<!-- Content -->
-	{@render children()}
+	<div class="pt-16">
+		{@render children()}
+	</div>
 
 	<!-- Footer -->
 	<footer class="py-6 text-center text-sm text-base-content/50 bg-base-200">
 		<p class="flex items-center justify-center gap-2">
-			Created by
+			Prompt Vault by 
 			<a
 				href="https://tawakalmit.my.id"
 				target="_blank"

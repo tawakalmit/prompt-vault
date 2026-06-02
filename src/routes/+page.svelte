@@ -1,61 +1,102 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { Prompt } from '$lib/types/database';
 
 	let { data }: { data: { prompts: Prompt[]; session: unknown } } = $props();
 
-	const PAGE_SIZE = 6;
+	const PAGE_SIZE = 12;
 	let visibleCount = $state(PAGE_SIZE);
+	let sentinelEl: HTMLDivElement | undefined = $state();
 
-	let visiblePrompts = $derived(data.prompts.slice(0, visibleCount));
-	let hasMore = $derived(visibleCount < data.prompts.length);
+	let promptsWithImages = $derived(data.prompts.filter((p) => p.image_url));
+	let visiblePrompts = $derived(promptsWithImages.slice(0, visibleCount));
+	let hasMore = $derived(visibleCount < promptsWithImages.length);
 
 	function loadMore() {
 		visibleCount += PAGE_SIZE;
 	}
+
+	onMount(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting && hasMore) {
+					loadMore();
+				}
+			},
+			{ rootMargin: '200px' }
+		);
+
+		$effect(() => {
+			if (sentinelEl) {
+				observer.observe(sentinelEl);
+			}
+			return () => {
+				if (sentinelEl) observer.unobserve(sentinelEl);
+			};
+		});
+
+		return () => observer.disconnect();
+	});
 </script>
 
-<div class="mx-auto px-4 py-8 min-h-dvh">
-	<!-- Prompt Cards Grid -->
-	{#if data.prompts.length === 0}
+<div class="mx-auto px-2 md:px-4 py-4 md:py-8 min-h-dvh">
+	{#if promptsWithImages.length === 0}
 		<div class="text-center py-20">
 			<p class="text-base-content/50 text-lg">Belum ada prompt yang tersimpan.</p>
 		</div>
 	{:else}
-		<div class="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+		<div class="masonry-grid">
 			{#each visiblePrompts as prompt}
-				<a
-					href="/prompt/{prompt.slug}"
-					class="card bg-base-200 shadow-md hover:shadow-lg transition-shadow"
-				>
-					{#if prompt.image_url}
-						<figure>
-							<img
-								src={prompt.image_url}
-								alt={prompt.title}
-								class="w-full h-auto aspect-3/2 object-cover"
-							/>
-						</figure>
-					{/if}
-					<div class="card-body p-3 md:p-6">
-						<h2 class="card-title text-sm md:text-base text-primary">{prompt.title}</h2>
-						<p class="text-base-content/70 line-clamp-4 text-xs md:text-sm">{prompt.prompt}</p>
-						<div class="card-actions justify-between items-center mt-2 md:mt-3">
-							<div class="badge badge-outline badge-primary badge-xs md:badge-sm">{prompt.category}</div>
-							<span class="text-[10px] md:text-xs text-base-content/50">
-								{new Date(prompt.created_at).toLocaleDateString('id-ID')}
-							</span>
-						</div>
-					</div>
+				<a href="/prompt/{prompt.slug}" class="masonry-item group">
+					<img
+						src={prompt.image_url}
+						alt={prompt.title}
+						class="w-full h-auto rounded-lg object-cover transition-transform duration-200 group-hover:scale-[1.02] group-hover:shadow-xl"
+						loading="lazy"
+					/>
 				</a>
 			{/each}
 		</div>
 
 		{#if hasMore}
-			<div class="text-center mt-8">
-				<button type="button" class="btn btn-outline btn-primary" onclick={loadMore}>
-					Load More
-				</button>
-			</div>
+			<div bind:this={sentinelEl} class="w-full h-10"></div>
 		{/if}
 	{/if}
 </div>
+
+<style>
+	.masonry-grid {
+		columns: 2;
+		column-gap: 0.5rem;
+	}
+
+	.masonry-item {
+		display: block;
+		margin-bottom: 0.5rem;
+		break-inside: avoid;
+		border-radius: 0.5rem;
+		overflow: hidden;
+	}
+
+	@media (min-width: 768px) {
+		.masonry-grid {
+			columns: 3;
+			column-gap: 0.75rem;
+		}
+
+		.masonry-item {
+			margin-bottom: 0.75rem;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.masonry-grid {
+			columns: 4;
+			column-gap: 1rem;
+		}
+
+		.masonry-item {
+			margin-bottom: 1rem;
+		}
+	}
+</style>
