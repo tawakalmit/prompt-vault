@@ -37,6 +37,12 @@
 	});
 </script>
 
+<svelte:head>
+	<meta name="theme-color" content="#1a1a2e" />
+	<meta property="og:site_name" content="Prompt Vault" />
+	<meta name="twitter:site" content="@tawakalmit" />
+</svelte:head>
+
 <div class="min-h-screen bg-base-100">
 	<!-- Navbar -->
 	<div

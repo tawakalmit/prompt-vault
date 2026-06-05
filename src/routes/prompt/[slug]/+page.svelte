@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import type { Prompt } from '$lib/types/database';
 
 	let { data }: { data: { prompt: Prompt } } = $props();
@@ -6,12 +7,62 @@
 	let copied = $state(false);
 	let showFullImage = $state(false);
 
+	let seoTitle = $derived(`${data.prompt.title} — Prompt Vault`);
+	let seoDescription = $derived(
+		data.prompt.prompt.length > 160
+			? data.prompt.prompt.slice(0, 157) + '...'
+			: data.prompt.prompt
+	);
+	let seoUrl = $derived(page.url.href);
+	let seoImage = $derived(data.prompt.image_url ?? '');
+
 	async function copyPrompt() {
 		await navigator.clipboard.writeText(data.prompt.prompt);
 		copied = true;
 		setTimeout(() => { copied = false; }, 2000);
 	}
 </script>
+
+<svelte:head>
+	<title>{seoTitle}</title>
+	<meta name="description" content={seoDescription} />
+	<meta name="author" content={data.prompt.created_by} />
+	<link rel="canonical" href={seoUrl} />
+
+	<!-- Open Graph -->
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content={seoTitle} />
+	<meta property="og:description" content={seoDescription} />
+	<meta property="og:url" content={seoUrl} />
+	{#if seoImage}
+		<meta property="og:image" content={seoImage} />
+	{/if}
+	<meta property="article:published_time" content={data.prompt.created_at} />
+	<meta property="article:author" content={data.prompt.created_by} />
+	<meta property="article:section" content={data.prompt.category} />
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content={seoImage ? 'summary_large_image' : 'summary'} />
+	<meta name="twitter:title" content={seoTitle} />
+	<meta name="twitter:description" content={seoDescription} />
+	{#if seoImage}
+		<meta name="twitter:image" content={seoImage} />
+	{/if}
+
+	<!-- JSON-LD Structured Data -->
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "CreativeWork",
+		"name": data.prompt.title,
+		"description": seoDescription,
+		"author": { "@type": "Person", "name": data.prompt.created_by },
+		"datePublished": data.prompt.created_at,
+		"dateModified": data.prompt.updated_at,
+		"url": seoUrl,
+		...(seoImage ? { "image": seoImage } : {}),
+		"genre": data.prompt.category
+	})}</script>`}
+</svelte:head>
 
 <div class="container mx-auto px-4 py-8 max-w-4xl">
 	<!-- Back -->
