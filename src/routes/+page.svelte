@@ -45,9 +45,9 @@
 			<p class="text-base-content/50 text-lg">Belum ada prompt yang tersimpan.</p>
 		</div>
 	{:else}
-		<div class="masonry-grid">
+		<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4">
 			{#each visiblePrompts as prompt}
-				<a href="/prompt/{prompt.slug}" class="masonry-item group">
+				<a href="/prompt/{prompt.slug}" class="group overflow-hidden rounded-lg">
 					<img
 						src={prompt.image_url}
 						alt={prompt.title}
@@ -64,39 +64,4 @@
 	{/if}
 </div>
 
-<style>
-	.masonry-grid {
-		columns: 2;
-		column-gap: 0.5rem;
-	}
 
-	.masonry-item {
-		display: block;
-		margin-bottom: 0.5rem;
-		break-inside: avoid;
-		border-radius: 0.5rem;
-		overflow: hidden;
-	}
-
-	@media (min-width: 768px) {
-		.masonry-grid {
-			columns: 3;
-			column-gap: 0.75rem;
-		}
-
-		.masonry-item {
-			margin-bottom: 0.75rem;
-		}
-	}
-
-	@media (min-width: 1024px) {
-		.masonry-grid {
-			columns: 4;
-			column-gap: 1rem;
-		}
-
-		.masonry-item {
-			margin-bottom: 1rem;
-		}
-	}
-</style>
